@@ -1,10 +1,10 @@
 package zafalconry;
 
-import java.awt.Color;
-import java.awt.Font;
+import gui.Painter;
+
+
 import java.awt.Graphics;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import org.powerbot.event.PaintListener;
 import org.powerbot.script.Manifest;
@@ -21,17 +21,24 @@ public class ZaFalconry extends PollingScript implements PaintListener
 {
 	private ArrayList<Task> taskList = new ArrayList<Task>();
 	
-	private int startingExp;
-	private int startingLevel;
-	private long startingTime;
+	public static int startingExp;
+	public static int startingLevel;
+	public static long startingTime;
+	public static final int falconID =5094;
+	public static final int kebbitID =5098;
+	private final Painter painter = new Painter(ctx);
+	
+	public static String status;
+
 	
 	@Override
 	public void start()
 	{
-		taskList.add(new Hunt(ctx));
-		taskList.add(new RetrieveFalcon(ctx));
 		taskList.add(new DropItems(ctx));
+		taskList.add(new RetrieveFalcon(ctx));
+		taskList.add(new Hunt(ctx));
 		
+		status ="Starting";
 		startingTime = System.currentTimeMillis();
 		startingExp = ctx.skills.getExperience(Skills.HUNTER);
 		startingLevel = ctx.skills.getLevel(Skills.HUNTER);
@@ -51,31 +58,9 @@ public class ZaFalconry extends PollingScript implements PaintListener
 	@Override
 	public void repaint(Graphics g) 
 	{
-		final int expGained = ctx.skills.getExperience(Skills.HUNTER) - startingExp;
-		final int currentLevel = ctx.skills.getLevel(Skills.HUNTER);
-		final int levelsGained = currentLevel - startingLevel;
-		final long currentTime = System.currentTimeMillis();
-		final long runTime = currentTime-startingTime;
-		final long expPerHour = (expGained * 3600000L)/runTime;
-		
-		g.setColor(new Color(0,0,0,180));
-		g.fillRect(0, 0, 400, 65);
-		g.setColor(Color.WHITE);
-		g.setFont(new Font(("Tahoma"),Font.PLAIN,12));
-		g.drawString("Run Time: "+getRunTimeString(runTime),10,20);
-		g.drawString("Experience: "+expGained,170,20);
-		g.drawString("Exp/Hour: "+expPerHour,10,40);
-		g.drawString("Level: "+currentLevel+"("+levelsGained+")",170 ,40 );
+		painter.draw(g);
 	}
 	
-	private String getRunTimeString(long millis)
-	{
-        long hours = TimeUnit.MILLISECONDS.toHours(millis);
-        millis -= TimeUnit.HOURS.toMillis(hours);
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
-        millis -= TimeUnit.MINUTES.toMillis(minutes);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
-        return hours+"h "+minutes+"m "+seconds+"s";
-	}
+
 
 }

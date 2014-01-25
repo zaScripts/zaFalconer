@@ -8,6 +8,7 @@ import org.powerbot.script.util.Random;
 import org.powerbot.script.wrappers.Npc;
 
 import task.Task;
+import zafalconry.ZaFalconry;
 
 public class Hunt extends Task
 {
@@ -21,47 +22,63 @@ public class Hunt extends Task
 	@Override
 	public boolean activate()
 	{
-		return ctx.players.local().getAnimation() == -1;
+		if( ctx.players.local().getAnimation() == -1 && ZaFalconry.status !="Retrieving")
+			return true;
+		return false;
 	}
 
 	@Override
 	public void execute() 
 	{
-		
-		final Npc kebbit = ctx.npcs.select().id(5098).nearest().poll();
+		ZaFalconry.status = "Hunting";
+		final Npc kebbit = ctx.npcs.select().id(ZaFalconry.kebbitID).nearest().poll();
 		if(kebbit.isOnScreen())
 		{
 			kebbit.interact("Catch");
 			Condition.wait(new Callable <Boolean>()
-					{
+			{
 
-						@Override
-						public Boolean call() throws Exception 
-						{
-							return !kebbit.isValid();
-						}
-						
-					},Random.nextInt(400, 500),5);
+				@Override
+				public Boolean call() throws Exception 
+				{
+					return kebbit.getId() ==ZaFalconry.falconID; // turned into a falcon
+				}
+					
+			},Random.nextInt(400,600),5);
 			
-		}else // not on the screen
+			if(kebbit.getId()==ZaFalconry.kebbitID) //still a kebbit
+			{
+				return;
+			}else
+			{
+				ZaFalconry.status = "Retrieving";
+			}
+
+			
+			
+		}
+			
+		if(!kebbit.isOnScreen())
 		{
 			ctx.camera.turnTo(kebbit.getLocation());
 			if(kebbit.isOnScreen())
 				return;
 			ctx.movement.stepTowards(kebbit.getLocation());
-			Condition.wait(new Callable <Boolean>()
+				Condition.wait(new Callable <Boolean>()
+				{
+
+					@Override
+					public Boolean call() throws Exception 
 					{
-
-						@Override
-						public Boolean call() throws Exception 
-						{
-							return ctx.players.local().getAnimation() ==-1;
-						}
+						return ctx.players.local().getAnimation() ==-1;
+					}
 						
-					},Random.nextInt(400, 500),5);
+				},Random.nextInt(200, 400),5);
 		}
-		
-		
+						
 	}
-
+		
+		
 }
+
+

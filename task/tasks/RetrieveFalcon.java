@@ -8,6 +8,7 @@ import org.powerbot.script.util.Random;
 import org.powerbot.script.wrappers.Npc;
 
 import task.Task;
+import zafalconry.ZaFalconry;
 
 public class RetrieveFalcon extends Task
 {
@@ -21,50 +22,55 @@ public class RetrieveFalcon extends Task
 	@Override
 	public boolean activate()
 	{
-		return ctx.players.local().getAnimation() == -1;
+		final Npc falcon = ctx.npcs.select().id(ZaFalconry.falconID).poll();
+		return falcon.isValid() && ctx.players.local().getAnimation()==-1;
+			
 	}
 
 	@Override
 	public void execute() 
 	{
-		final Npc falcon = ctx.npcs.select().id(5094).nearest().poll();
-		
-		if(falcon.isValid())
-		{
-			System.out.println("retrieving falcon!");
+		final Npc falcon = ctx.npcs.select().id(ZaFalconry.falconID).poll();
 			if(falcon.isOnScreen())
-		
 			{
-		falcon.interact("Retrieve");
-		Condition.wait(new Callable <Boolean>()
-		{
 
-			@Override
-			public Boolean call() throws Exception 
-			{
-				return !falcon.isValid();
-			}},Random.nextInt(400, 500),5);
+				falcon.interact("Retrieve");
+				Condition.wait(new Callable <Boolean>()
+						{
+
+					@Override
+					public Boolean call() throws Exception 
+					{
+						return !falcon.isValid();
+					}},Random.nextInt(500,800),5);
+				
+				if(falcon.isValid()) // if it couldn't be retrieved
+				{
+					return;
+				}else
+				{
+					ZaFalconry.status = "Hunting";
+				}
 		
-			}else //if falcon is not on the screen
+			}
+			if(!falcon.isOnScreen())
 			{
 
 				ctx.movement.stepTowards(falcon.getLocation());
 				Condition.wait(new Callable <Boolean>()
-						{
+					{
 
-							@Override
-							public Boolean call() throws Exception 
-							{
-								return ctx.players.local().getAnimation() ==-1;
-							}
-							
-						},Random.nextInt(400, 500),5);
+						@Override
+						public Boolean call() throws Exception 
+						{
+							return ctx.players.local().getAnimation() ==-1;
+						}
+						
+					},Random.nextInt(400, 500),5);
 			}
 		
-		//if falcon is still valid, try retrieving it again
-		if(falcon.isValid())
-			execute();
-		}
+		
+
 		
 		
 		
