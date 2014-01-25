@@ -47,9 +47,7 @@ public class RetrieveFalcon extends Task
 		
 			}else //if falcon is not on the screen
 			{
-				ctx.camera.turnTo(falcon.getLocation());
-				if(falcon.isOnScreen())
-					return;
+
 				ctx.movement.stepTowards(falcon.getLocation());
 				Condition.wait(new Callable <Boolean>()
 						{
